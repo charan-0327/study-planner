@@ -1,4 +1,4 @@
-const API = "https://your-backend-url.onrender.com/tasks";
+const API = "https://study-planner-f9ph.onrender.com/tasks";
 
 function fetchTasks() {
   fetch(API)
