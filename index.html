@@ -14,22 +14,23 @@
 <div class="container">
 
   <section class="form-section">
-  <h2>Enter Task Details</h2>
+    <h2>Enter Task Details</h2>
 
-  <input type="text" id="task" placeholder="Enter your task">
-  
-  <input type="date" id="deadline">
+    <!-- ✅ FIXED IDs -->
+    <input type="text" id="taskInput" placeholder="Enter your task">
+    
+    <input type="date" id="deadlineInput">
 
-  <select id="category">
-    <option value="Study">📘 Study</option>
-    <option value="Assignment">📝 Assignment</option>
-    <option value="Exam">📊 Exam</option>
-    <option value="Other">📌 Other</option>
-  </select>
+    <select id="categoryInput">
+      <option value="Study">📘 Study</option>
+      <option value="Assignment">📝 Assignment</option>
+      <option value="Exam">📊 Exam</option>
+      <option value="Other">📌 Other</option>
+    </select>
 
-  <button onclick="addTask()">Add Task</button>
-  <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-</section>
+    <button onclick="addTask()">Add Task</button>
+    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+  </section>
 
   <section class="progress-section">
     <h2>Progress</h2>

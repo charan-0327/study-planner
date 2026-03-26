@@ -1,70 +1,78 @@
-const API = "https://study-planner-f9ph.onrender.com/tasks";
+const API = "https://study-planner-f9ph.onrender.com/tasks"; // 🔁 replace if your URL is different
 
-function fetchTasks() {
-  fetch(API)
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById("taskList");
-      list.innerHTML = "";
+// Load tasks on page load
+window.onload = loadTasks;
 
-      let completed = 0;
+// 📥 Load all tasks
+async function loadTasks() {
+  const res = await fetch(API);
+  const tasks = await res.json();
 
-      data.forEach(task => {
-        if (task.status === "Completed") completed++;
+  const taskList = document.getElementById("taskList");
+  taskList.innerHTML = "";
 
-        const li = document.createElement("li");
+  tasks.forEach(task => {
+    const li = document.createElement("li");
 
-        let today = new Date().toISOString().split("T")[0];
-        let warning = task.deadline < today ? "overdue" : "";
+    li.innerHTML = `
+      <strong>${task.title}</strong> 
+      | ${task.deadline} 
+      | ${task.category || "General"} 
+      | ${task.status}
+      <br>
+      <button onclick="completeTask(${task.id})">✔ Complete</button>
+      <button onclick="deleteTask(${task.id})">❌ Delete</button>
+    `;
 
-      li.innerHTML = `
-  <div class="task-info">
-    <strong>${task.title}</strong>
-    <small>
-      ${task.deadline} | ${task.status} | 
-      <span class="${task.category?.toLowerCase()}">${task.category || "General"}</span>
-    </small>
-  </div>
-
-  <div>
-    <button onclick="deleteTask(${task.id})">❌</button>
-    <button onclick="completeTask(${task.id})">✔</button>
-  </div>
-`;  
-
-        list.appendChild(li);
-      });
-
-      // Progress bar update
-      let progress = data.length === 0 ? 0 : (completed / data.length) * 100;
-      document.getElementById("progressFill").style.width = progress + "%";
-    });
+    taskList.appendChild(li);
+  });
 }
 
-function addTask() {
-  const title = document.getElementById("task").value;
-  const deadline = document.getElementById("deadline").value;
-  const category = document.getElementById("category").value;
+// ➕ Add new task
+async function addTask() {
+  const title = document.getElementById("taskInput").value;
+  const deadline = document.getElementById("deadlineInput").value;
+  const category = document.getElementById("categoryInput").value;
 
-  fetch(API, {
+  if (!title || !deadline) {
+    alert("Please enter task and deadline");
+    return;
+  }
+
+  await fetch(API, {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ title, deadline, category })
-  }).then(() => fetchTasks());
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      title,
+      deadline,
+      category
+    })
+  });
+
+  // Clear inputs
+  document.getElementById("taskInput").value = "";
+  document.getElementById("deadlineInput").value = "";
+  document.getElementById("categoryInput").value = "";
+
+  loadTasks();
 }
 
-function deleteTask(id) {
-  fetch(`${API}/${id}`, { method: "DELETE" })
-    .then(() => fetchTasks());
+// ❌ Delete task
+async function deleteTask(id) {
+  await fetch(`${API}/${id}`, {
+    method: "DELETE"
+  });
+
+  loadTasks();
 }
 
-function completeTask(id) {
-  fetch(`${API}/${id}`, { method: "PUT" })
-    .then(() => fetchTasks());
-}
+// ✔ Mark complete
+async function completeTask(id) {
+  await fetch(`${API}/${id}`, {
+    method: "PUT"
+  });
 
-function toggleDarkMode() {
-  document.body.classList.toggle("dark");
+  loadTasks();
 }
-
-fetchTasks();
