@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const db = require("./db");
+const pool = require("./db");
 
 const app = express();
 app.use(cors());
@@ -11,48 +11,68 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// Get all tasks
-app.get("/tasks", (req, res) => {
-  db.query("SELECT * FROM tasks", (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
+// GET all tasks
+app.get("/tasks", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM tasks ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
-// Add task
-app.post("/tasks", (req, res) => {
-  const { title, deadline, category } = req.body;
+// ADD new task
+app.post("/tasks", async (req, res) => {
+  try {
+    const { title, deadline, category } = req.body;
 
-db.query(
-  "INSERT INTO tasks (title, deadline, status, category) VALUES (?, ?, 'Pending', ?)",
-  [title, deadline, category],
-    (err) => {
-      if (err) throw err;
-      res.send("Task Added");
-    }
-  );
+    const newTask = await pool.query(
+      "INSERT INTO tasks (title, deadline, status, category) VALUES ($1, $2, $3, $4) RETURNING *",
+      [title, deadline, "Pending", category]
+    );
+
+    res.json(newTask.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
-// Delete task
-app.delete("/tasks/:id", (req, res) => {
-  db.query("DELETE FROM tasks WHERE id=?", [req.params.id], (err) => {
-    if (err) throw err;
-    res.send("Task Deleted");
-  });
+// DELETE task
+app.delete("/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await pool.query("DELETE FROM tasks WHERE id = $1", [id]);
+
+    res.json("Task deleted");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
-// Mark complete
-app.put("/tasks/:id", (req, res) => {
-  db.query(
-    "UPDATE tasks SET status='Completed' WHERE id=?",
-    [req.params.id],
-    (err) => {
-      if (err) throw err;
-      res.send("Task Updated");
-    }
-  );
+// MARK COMPLETE
+app.put("/tasks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await pool.query(
+      "UPDATE tasks SET status = $1 WHERE id = $2",
+      ["Completed", id]
+    );
+
+    res.json("Task updated");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+// Start server
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
