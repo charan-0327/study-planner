@@ -6,12 +6,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Test route
+// ✅ Create table automatically
+pool.query(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    title TEXT,
+    deadline DATE,
+    status TEXT,
+    category TEXT
+  );
+`)
+.then(() => console.log("Table ready"))
+.catch(err => console.error(err));
+
+// ✅ Test route
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// GET all tasks
+// ✅ GET all tasks
 app.get("/tasks", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM tasks ORDER BY id DESC");
@@ -22,7 +35,7 @@ app.get("/tasks", async (req, res) => {
   }
 });
 
-// ADD new task
+// ✅ ADD new task
 app.post("/tasks", async (req, res) => {
   try {
     const { title, deadline, category } = req.body;
@@ -39,7 +52,7 @@ app.post("/tasks", async (req, res) => {
   }
 });
 
-// DELETE task
+// ✅ DELETE task
 app.delete("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -53,7 +66,7 @@ app.delete("/tasks/:id", async (req, res) => {
   }
 });
 
-// MARK COMPLETE
+// ✅ UPDATE task status
 app.put("/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -70,7 +83,7 @@ app.put("/tasks/:id", async (req, res) => {
   }
 });
 
-// Start server
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
