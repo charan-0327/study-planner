@@ -4,26 +4,24 @@ const pool = require("./db");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json())
 
-// ✅ Create table automatically
 pool.query(`
   CREATE TABLE IF NOT EXISTS tasks (
     id SERIAL PRIMARY KEY,
     title TEXT,
     deadline DATE,
-    status TEXT,
+    status TEXT DEFAULT 'Pending',
     category TEXT
   );
 `)
 .then(() => console.log("Table ready"))
-.catch(err => console.error(err));
+.catch(err => console.error("Table error:", err));
 
 // ✅ Test route
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
-
 // ✅ GET all tasks
 app.get("/tasks", async (req, res) => {
   try {
